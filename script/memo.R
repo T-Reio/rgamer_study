@@ -1,0 +1,6 @@
+library(pacman)
+p_load(rstan)
+p_load(tidyverse)
+p_load(baseballr)
+install.packages("remotes")
+remotes::install_github("yukiyanai/rgamer")

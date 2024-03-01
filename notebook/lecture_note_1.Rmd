@@ -1,0 +1,22 @@
+---
+title: "rgamer"
+author: "tj_chann"
+date: "2024-03-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pacman)
+p_load(rstan)
+p_load(tidyverse)
+p_load(rgamer)
+```
+
+# Rで学ぶゲーム理論
+
+## Rで体感するゲーム理論
+
+### ゲーム理論の伝統的な学習法
+
+- 紙の上で概念や計算を学ぶ

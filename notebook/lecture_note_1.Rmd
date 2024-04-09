@@ -8,7 +8,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
-p_load(rstan)
 p_load(tidyverse)
 p_load(rgamer)
 ```
@@ -20,3 +19,58 @@ p_load(rgamer)
 ### ゲーム理論の伝統的な学習法
 
 - 紙の上で概念や計算を学ぶ
+  - 数学的に容易な内容から始まり、数学的な難易度が初級・上級の別も決めてしまう
+  - 社会科学の汎用的な分析道具であり、社会実践上様々な知見を提供するようになった現在を鑑みると問題
+    - 数学的な取り扱いの難しさが、重要なトピックの説明を妨げる
+
+こうした問題に対処するために、理論的な命題を実践をもって確認する必要
+  - `rgamer`パッケージの考案
+    - ゲームを自動的に解き、可視化する
+
+### ゲームを定義する
+
+マッチングペニーの例を用いて、基本的な操作を紹介する
+
+1. 標準形ゲームの定義
+  - 要件
+    - players
+    - strategies
+    - payoffs
+```{r 1_1_1}
+game1 <- rgamer::normal_form(
+  players = c("Ore", "Are"), # プレイヤー
+  s1 = c("top", "bottom"), # 戦略
+  s2 = c("top", "bottom"),
+  payoffs1 = c(1, 0, 0, 1), # 利得
+  payoffs2 = c(0, 1, 1, 0),
+)
+```
+
+2. 利得表の表示
+  - 定義されたゲームの利得表を作成
+```{r 1_2_1}
+g1_sol <- solve_nfg(game1) # normal_form_game
+```
+  
+3. ナッシュ均衡を求める
+
+- 全てのプレイヤーについて、合理的な個人ならば、それ以上選択の余地がないと認められる状況
+  - self-commitment
+- マッチングペニーの例の場合
+  - Pure strategy NE does not exit.
+  - You can show the mixed strategy Nash Equilibrium.
+```{r 1_3_1}
+g1_sol2 <- solve_nfg(game1, mixed = TRUE)
+g1_sol2$table #htmlに表示するにはこうする必要があるらしい
+```
+
+4. 最適反応の表示
+
+- best responsesには利得表で`^`が表示される
+  - 2人のプレイヤーの両方の戦略が互いに最適反応となるような戦略の組があれば、それが純粋戦略のNEになる
+  - 相手の戦略を所与としたときの、自身の最適反応を示すプロット
+  
+```{r 1_4_1}
+g1_sol2$br_plot
+```
+

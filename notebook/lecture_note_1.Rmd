@@ -2,7 +2,13 @@
 title: "rgamer"
 author: "tj_chann"
 date: "2024-03-01"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+    number_sections: true
+    theme: "journal"
 ---
 
 ```{r setup, include=FALSE}
@@ -24,6 +30,33 @@ p_load(rgamer)
     - 数学的な取り扱いの難しさが、重要なトピックの説明を妨げる
 
 こうした問題に対処するために、理論的な命題を実践をもって確認する必要
+  - 例えば統計学では、コイン投げの試行を実際に繰り返し行うことで、表が出る確率が.5に収束していく様を確認できる
+```{r prelim_coin_toss}
+results <- c("T", "B")
+result_table <- map_df(
+  1:3,
+  ~ tibble(
+    stage = .x,
+    result = sample(results, 1000, replace = T, prob = c(.5, .5))
+  ) %>% 
+    mutate(trial = row_number())
+) %>% 
+    group_by(stage) %>% 
+    mutate(
+      freq = cumsum(result == "T"), # 表が出た累積回数
+      cum_average = freq / trial, # 累積比率
+    )
+
+ggplot(result_table) +
+  aes(x = trial, y = cum_average, group = as.factor(stage), colour = as.factor(stage)) +
+  geom_path() +
+  geom_point() +
+  geom_hline(yintercept = .5, linetype = "dashed") +
+  theme_bw() +
+  labs(x = "試行回数", y = "平均", fill = "ステージ", colour = "ステージ") +
+  theme(text = element_text(size = 12))
+```
+  
   - `rgamer`パッケージの考案
     - ゲームを自動的に解き、可視化する
 
@@ -31,11 +64,11 @@ p_load(rgamer)
 
 マッチングペニーの例を用いて、基本的な操作を紹介する
 
-1. 標準形ゲームの定義
-  - 要件
-    - players
-    - strategies
-    - payoffs
+#### 標準形ゲームの定義
+- 要件
+  - players
+  - strategies
+  - payoffs
 ```{r 1_1_1}
 game1 <- rgamer::normal_form(
   players = c("Ore", "Are"), # プレイヤー
@@ -46,25 +79,30 @@ game1 <- rgamer::normal_form(
 )
 ```
 
-2. 利得表の表示
-  - 定義されたゲームの利得表を作成
-```{r 1_2_1}
+#### 利得表の表示
+- 定義されたゲームの利得表を作成
+```{r 1_2_1, results='hide'}
 g1_sol <- solve_nfg(game1) # normal_form_game
+# 純粋戦略のナッシュ均衡が存在しない
 ```
   
-3. ナッシュ均衡を求める
+#### ナッシュ均衡を求める
 
 - 全てのプレイヤーについて、合理的な個人ならば、それ以上選択の余地がないと認められる状況
   - self-commitment
 - マッチングペニーの例の場合
   - Pure strategy NE does not exit.
   - You can show the mixed strategy Nash Equilibrium.
-```{r 1_3_1}
+```{r 1_3_1, results='hide'}
 g1_sol2 <- solve_nfg(game1, mixed = TRUE)
+```
+
+```{r 1_3_2}
 g1_sol2$table #htmlに表示するにはこうする必要があるらしい
 ```
 
-4. 最適反応の表示
+
+#### 最適反応の表示
 
 - best responsesには利得表で`^`が表示される
   - 2人のプレイヤーの両方の戦略が互いに最適反応となるような戦略の組があれば、それが純粋戦略のNEになる
@@ -73,4 +111,42 @@ g1_sol2$table #htmlに表示するにはこうする必要があるらしい
 ```{r 1_4_1}
 g1_sol2$br_plot
 ```
+  
+  - P2には、P1が$\{(1/2, 1/2\}$の混合戦略を取るときのみ、混合戦略を取るインセンティブがある
 
+#### シミュレーションの結果を眺める
+
+- `rgamer`は特定のゲームに対する標準的な分析を自動で行うだけではなく、特定の意思決定ルールに従う個人が、そのゲームにおいてどのように振舞うのかをシミュレーションすることができる
+
+```{r 1_5_1}
+g1_sim <- sim_game(
+  game1, # normal_formで定義したgameオブジェクト
+  n_samples = 100, # iterationの数（ゲームをプレーする個人の組）
+  n_periods = 50 # 一つの組がプレーするゲームの数
+)
+g1_sim
+```
+  - 100人の「Ore」のうち、何人が表/裏を選択したか→50ピリオド分
+
+#### その他の機能
+
+- extensive form game
+  - ゲームの木の描画
+  - backward inductionやsubgame perfect equilibriumの導出
+- matching
+  - deferred acceptance algorithm
+  - Boston algorithm
+  - 安定マッチングの判定
+  
+## ゲームの定義と合理的なプレーヤー
+
+**標準形ゲームの基礎**
+
+- 人々が同時に意思決定するような状況
+  - じゃんけん
+- 標準形ゲームの三要素
+  - プレイヤー
+  - 戦略
+  - 利得
+
+### ゲーム的状況

@@ -1,3 +1,5 @@
 library(pacman)
 p_load(tidyverse)
 p_load(rgamer)
+p_load(kableExtra)
+p_load(tinytable)
